@@ -14,7 +14,7 @@ var world_state: Dictionary = {}
 var registry = Registry.new()
 var clock = Clock.new()
 var advancing := false
-# Legacy UI projection; references the canonical entity dictionaries.
+# Legacy UI projection; property fields are derived from canonical accounts.
 var state: Dictionary:
 	get:
 		if world_state.is_empty():
@@ -27,9 +27,9 @@ var state: Dictionary:
 			"characters": world_state["characters"].filter(func(p): return int(p["clan_id"]) == id),
 			"ancestors": world_state["ancestors"]}
 
-func with_property(owner: Dictionary, kind: String) -> Dictionary:
-	var view := owner.duplicate()
-	view.merge(Economy.summary(world_state, kind, int(owner["id"])), true)
+func with_property(property_owner: Dictionary, kind: String) -> Dictionary:
+	var view := property_owner.duplicate()
+	view.merge(Economy.summary(world_state, kind, int(property_owner["id"])), true)
 	return view
 
 func grant_grain(household_id: int, amount: int) -> bool:

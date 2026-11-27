@@ -14,6 +14,12 @@ func check(condition: bool, description: String) -> void:
 		push_error(description)
 
 func _initialize() -> void:
+	var raw = JSON.parse_string(FileAccess.get_file_as_string(Store.SCENARIO))
+	var normalized: Dictionary = Schema.normalize_json(raw)
+	check(normalized["schema_version"] is int, "JSON schema number normalized")
+	check(normalized["characters"][0]["id"] is int, "nested ID normalized")
+	check(Schema.normalize_json(2.5) is float, "fraction preserved")
+	check(Schema.validate_legacy(normalized), "legacy scenario validates")
 	var s := Store.read(Store.SCENARIO)
 	check(not s.is_empty(), "scenario validation")
 	if s.is_empty():

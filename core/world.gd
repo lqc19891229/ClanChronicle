@@ -8,6 +8,7 @@ signal year_started(day: int)
 const Clock = preload("res://core/simulation_clock.gd")
 const Registry = preload("res://core/entity_registry.gd")
 const Store = preload("res://core/world_store.gd")
+const Schema = preload("res://core/world_schema.gd")
 var world_state: Dictionary = {}
 var registry = Registry.new()
 var clock = Clock.new()
@@ -32,7 +33,7 @@ func _ready() -> void:
 	new_game()
 
 func replace_world(candidate: Dictionary) -> bool:
-	if advancing or candidate.is_empty():
+	if advancing or candidate.is_empty() or not Schema.validate(candidate):
 		return false
 	var next_registry = Registry.new()
 	if not next_registry.rebuild(candidate):

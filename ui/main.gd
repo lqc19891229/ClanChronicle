@@ -21,10 +21,10 @@ func _ready() -> void:
     World.changed.connect(refresh)
     refresh()
 
-func text_label(value: String, size: int = 18, color: Color = INK) -> Label:
+func text_label(value: String, font_size: int = 18, color: Color = INK) -> Label:
     var label = Label.new()
     label.text = value
-    label.add_theme_font_size_override("font_size", size)
+    label.add_theme_font_size_override("font_size", font_size)
     label.add_theme_color_override("font_color", color)
     return label
 
@@ -155,6 +155,14 @@ func show_tab(tab: String) -> void:
 func refresh() -> void:
     var state: Dictionary = World.state
     if state.is_empty():
+        date_label.text = "未初始化"
+        resource_label.text = "世界数据加载失败"
+        status_label.text = "初始剧本无效，请查看 Godot 调试器中的校验信息。"
+        for child in content.get_children():
+            content.remove_child(child)
+            child.queue_free()
+        content.add_child(text_label("世界数据加载失败", 28, GOLD))
+        content.add_child(text_label("请检查 data/scenario.json 和调试器；修复后可点击新开局。"))
         return
     var clan: Dictionary = state["clan"]
     date_label.text = World.date_text()
@@ -327,9 +335,9 @@ func enterprises() -> void:
             continue
         var block = panel(content)
         block.add_child(text_label(str(asset["name"]), 21, GOLD))
-        var owner := World.entity(kind, owner_id)
+        var property_owner := World.entity(kind, owner_id)
         var settlement := World.entity("settlements", int(asset["settlement_id"]))
-        block.add_child(text_label("产权：%s | 地点：%s | 面积：%d亩" % [owner["name"], settlement["name"], int(asset["area"])]))
+        block.add_child(text_label("产权：%s | 地点：%s | 面积：%d亩" % [property_owner["name"], settlement["name"], int(asset["area"])]))
         for e in s["enterprises"]:
             if e["asset_id"] == asset["id"]:
                 block.add_child(text_label("管事：%s | 最近秋收：%d石" % [World.person_name(int(e["manager_id"])), int(e["last_harvest"])]))

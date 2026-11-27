@@ -5,12 +5,24 @@ const SAVE_PATH = "user://clan_save.json"
 
 static func read(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
+		push_warning("World file not found: " + path)
 		return {}
-	var raw = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var parser := JSON.new()
+	if parser.parse(FileAccess.get_file_as_string(path)) != OK:
+		push_warning("%s:%d: %s" % [path, parser.get_error_line(), parser.get_error_message()])
+		return {}
+	var raw = parser.data
 	if not raw is Dictionary:
+		push_warning("World file root must be a dictionary: " + path)
 		return {}
 	var migrated := Schema.migrate(raw)
-	return migrated if Schema.validate(migrated) else {}
+	if migrated.is_empty():
+		push_warning("World migration failed: " + path)
+		return {}
+	if not Schema.validate(migrated):
+		push_warning("World schema validation failed: " + path)
+		return {}
+	return migrated
 
 static func write(state: Dictionary, path: String = SAVE_PATH) -> Error:
 	if not Schema.validate(state):

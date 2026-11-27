@@ -1,30 +1,24 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "day": 0,
-  "clan": {
-    "id": 1,
-    "name": "沈氏宗族",
-    "leader_id": 1,
-    "cash": 200,
-    "grain": 100,
-    "land": 80,
-    "location": "青州 · 清河郡 · 清河县 · 东乡 · 沈家村"
-  },
   "branches": [
     {
       "id": 1,
       "name": "长房",
-      "head_id": 1
+      "head_id": 1,
+      "clan_id": 1
     },
     {
       "id": 2,
       "name": "二房",
-      "head_id": 9
+      "head_id": 9,
+      "clan_id": 1
     },
     {
       "id": 3,
       "name": "三房",
-      "head_id": 17
+      "head_id": 17,
+      "clan_id": 1
     }
   ],
   "households": [
@@ -35,7 +29,8 @@
       "head_id": 1,
       "land": 40,
       "cash": 30,
-      "grain": 15
+      "grain": 15,
+      "settlement_id": 1
     },
     {
       "id": 2,
@@ -44,7 +39,8 @@
       "head_id": 5,
       "land": 40,
       "cash": 20,
-      "grain": 10
+      "grain": 10,
+      "settlement_id": 1
     },
     {
       "id": 3,
@@ -53,7 +49,8 @@
       "head_id": 9,
       "land": 40,
       "cash": 30,
-      "grain": 15
+      "grain": 15,
+      "settlement_id": 1
     },
     {
       "id": 4,
@@ -62,7 +59,8 @@
       "head_id": 13,
       "land": 40,
       "cash": 20,
-      "grain": 10
+      "grain": 10,
+      "settlement_id": 1
     },
     {
       "id": 5,
@@ -71,7 +69,8 @@
       "head_id": 17,
       "land": 40,
       "cash": 30,
-      "grain": 15
+      "grain": 15,
+      "settlement_id": 1
     },
     {
       "id": 6,
@@ -80,7 +79,8 @@
       "head_id": 21,
       "land": 40,
       "cash": 20,
-      "grain": 10
+      "grain": 10,
+      "settlement_id": 1
     }
   ],
   "characters": [
@@ -102,7 +102,9 @@
         68,
         42,
         53
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 2,
@@ -122,7 +124,9 @@
         41,
         52,
         63
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 3,
@@ -142,7 +146,9 @@
         25,
         36,
         10
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 4,
@@ -162,7 +168,9 @@
         35,
         9,
         20
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 5,
@@ -182,7 +190,9 @@
         22,
         33,
         44
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 6,
@@ -202,7 +212,9 @@
         33,
         44,
         18
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 7,
@@ -222,7 +234,9 @@
         5,
         5,
         12
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 8,
@@ -242,7 +256,9 @@
         5,
         11,
         22
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 9,
@@ -262,7 +278,9 @@
         46,
         57,
         68
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 10,
@@ -282,7 +300,9 @@
         56,
         30,
         41
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 11,
@@ -302,7 +322,9 @@
         5,
         16,
         27
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 12,
@@ -322,7 +344,9 @@
         15,
         26,
         5
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 13,
@@ -342,7 +366,9 @@
         39,
         13,
         24
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 14,
@@ -362,7 +388,9 @@
         13,
         24,
         35
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 15,
@@ -382,7 +410,9 @@
         7,
         18,
         5
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 16,
@@ -402,7 +432,9 @@
         17,
         5,
         5
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 17,
@@ -422,7 +454,9 @@
         61,
         35,
         46
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 18,
@@ -442,7 +476,9 @@
         34,
         45,
         56
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 19,
@@ -462,7 +498,9 @@
         22,
         33,
         7
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 20,
@@ -482,7 +520,9 @@
         32,
         6,
         17
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 21,
@@ -502,7 +542,9 @@
         19,
         30,
         41
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 22,
@@ -522,7 +564,9 @@
         30,
         41,
         15
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 23,
@@ -542,7 +586,9 @@
         24,
         5,
         9
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     },
     {
       "id": 24,
@@ -562,7 +608,9 @@
         5,
         8,
         19
-      ]
+      ],
+      "clan_id": 1,
+      "settlement_id": 1
     }
   ],
   "ancestors": [
@@ -571,5 +619,66 @@
       "name": "沈氏先祖",
       "sex": "男"
     }
-  ]
+  ],
+  "polities": [
+    {
+      "id": 1,
+      "name": "大梁",
+      "capital_settlement_id": -1
+    }
+  ],
+  "regions": [
+    {
+      "id": 1,
+      "name": "青州",
+      "level": "zhou",
+      "parent_id": -1,
+      "legal_polity_id": 1,
+      "controlling_polity_id": 1
+    },
+    {
+      "id": 2,
+      "name": "清河郡",
+      "level": "jun",
+      "parent_id": 1,
+      "legal_polity_id": 1,
+      "controlling_polity_id": 1
+    },
+    {
+      "id": 3,
+      "name": "清河县",
+      "level": "xian",
+      "parent_id": 2,
+      "legal_polity_id": 1,
+      "controlling_polity_id": 1
+    },
+    {
+      "id": 4,
+      "name": "东乡",
+      "level": "xiang",
+      "parent_id": 3,
+      "legal_polity_id": 1,
+      "controlling_polity_id": 1
+    }
+  ],
+  "settlements": [
+    {
+      "id": 1,
+      "name": "沈家村",
+      "region_id": 4
+    }
+  ],
+  "clans": [
+    {
+      "id": 1,
+      "name": "沈氏宗族",
+      "leader_id": 1,
+      "cash": 200,
+      "grain": 100,
+      "land": 80,
+      "location": "青州 · 清河郡 · 清河县 · 东乡 · 沈家村",
+      "home_settlement_id": 1
+    }
+  ],
+  "player_clan_id": 1
 }

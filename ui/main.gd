@@ -116,7 +116,7 @@ func build_ui() -> void:
     nav.add_theme_constant_override("separation", 8)
     sidebar.add_child(nav)
     nav.add_child(text_label("宗族事务", 17, GOLD))
-    for tab in ["宗族总览", "人物名册", "房支与家庭", "家谱", "财产账簿"]:
+    for tab in ["宗族总览", "人物名册", "房支与家庭", "家谱", "财产账簿", "国家与地区"]:
         var b = button(tab, show_tab.bind(tab))
         b.toggle_mode = true
         nav_buttons[tab] = b
@@ -130,7 +130,7 @@ func build_ui() -> void:
     content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     content.add_theme_constant_override("separation", 12)
     scroll.add_child(content)
-    status_label = text_label("原型 V0.0.1 · 时间与组织数据", 15, MUTED)
+    status_label = text_label("原型 V0.0.2 · 四层世界基础", 15, MUTED)
     root.add_child(status_label)
     timer = Timer.new()
     timer.wait_time = 1.0
@@ -170,6 +170,7 @@ func refresh() -> void:
         "房支与家庭": households()
         "家谱": genealogy()
         "财产账簿": property_book()
+        "国家与地区": geography()
 
 func heading(title: String, description: String) -> void:
     content.add_child(text_label(title, 28, GOLD))
@@ -203,8 +204,11 @@ func roster() -> void:
         list.add_child(item)
     var detail = panel(row)
     var selected: Dictionary = World.person_by_id(selected_id)
-    if selected.is_empty():
-        return
+    if selected.is_empty() or int(selected.get("clan_id", -1)) != int(World.state["clan"]["id"]):
+        if World.state["characters"].is_empty():
+            return
+        selected = World.state["characters"][0]
+        selected_id = int(selected["id"])
     detail.add_child(text_label(str(selected["name"]), 28, GOLD))
     detail.add_child(text_label("%s · %d岁 · %s" % [selected["sex"], World.age_of(selected), selected["occupation"]]))
     detail.add_child(text_label("父：%s" % World.person_name(int(selected["father_id"]))))
@@ -246,15 +250,46 @@ func households() -> void:
 func genealogy() -> void:
     heading("家谱", "简化家谱：共同先祖、三房、各房后代；配偶在人物详情中查看")
     var ancestor = panel(content)
-    ancestor.add_child(text_label(World.person_name(1001), 24, GOLD))
+    for p in World.state["ancestors"]:
+        ancestor.add_child(text_label(str(p["name"]), 24, GOLD))
     for b in World.state["branches"]:
         var group = panel(content)
         group.add_child(text_label("%s  /  %s" % [b["name"], World.person_name(int(b["head_id"]))], 22, GOLD))
         for p in World.state["characters"]:
             if int(p["branch_id"]) != int(b["id"]) or int(p["father_id"]) == -1:
                 continue
-            var depth: int = 1 if int(p["father_id"]) == 1001 else (2 if int(p["father_id"]) == int(b["head_id"]) else 3)
+            var depth: int = genealogy_depth(p)
             group.add_child(text_label("    ".repeat(depth - 1) + "└ " + str(p["name"]) + "  ·  父：" + World.person_name(int(p["father_id"])), 17))
+
+func genealogy_depth(person: Dictionary) -> int:
+    var depth: int = 0
+    var visited: Dictionary = {}
+    var current: Dictionary = person
+    while not current.is_empty():
+        var id := int(current["id"])
+        if visited.has(id):
+            break
+        visited[id] = true
+        current = World.person_by_id(int(current.get("father_id", -1)))
+        if not current.is_empty():
+            depth += 1
+    return maxi(depth, 1)
+
+func geography() -> void:
+    heading("国家与地区", "政权、行政隶属与聚落独立记录")
+    for polity in World.world_state["polities"]:
+        var block = panel(content)
+        block.add_child(text_label(str(polity["name"]), 22, GOLD))
+    for region in World.world_state["regions"]:
+        var block = panel(content)
+        block.add_child(text_label(str(region["name"]), 20, GOLD))
+        var parent = World.entity("regions", int(region["parent_id"]))
+        var legal = World.entity("polities", int(region["legal_polity_id"]))
+        var actual = World.entity("polities", int(region["controlling_polity_id"]))
+        block.add_child(text_label("上级：%s  |  法定归属：%s  |  实际控制：%s" % [parent.get("name", "无"), legal.get("name", "无"), actual.get("name", "无")]))
+        for settlement in World.world_state["settlements"]:
+            if int(settlement["region_id"]) == int(region["id"]):
+                block.add_child(text_label("聚落：" + str(settlement["name"]), 16, MUTED))
 
 func property_book() -> void:
     heading("财产账簿", "公产与家庭财产分别统计；本版仅展示，不支持交易")

@@ -10,7 +10,7 @@ static func migrate(raw: Dictionary) -> Dictionary:
 	if version == VERSION:
 		return s
 	if version == 2:
-		return Economy.migrate(s) if validate_base(s) else {}
+		return Economy.migrate(s) if validate_legacy(s) else {}
 	if version != 1 or not s.get("clan") is Dictionary:
 		return {}
 	for key in ["branches", "households", "characters", "ancestors"]:
@@ -41,6 +41,16 @@ static func migrate(raw: Dictionary) -> Dictionary:
 		p["settlement_id"] = 1
 	s["schema_version"] = 2
 	return Economy.migrate(s) if validate_base(s) else {}
+
+static func validate_legacy(s: Dictionary) -> bool:
+	if not validate_base(s):
+		return false
+	for kind in Economy.OWNER_TYPES:
+		for owner in s[kind]:
+			for key in ["cash", "grain", "land"]:
+				if (kind in ["clans", "households"] or owner.has(key)) and (not valid_int(owner.get(key)) or owner[key] < 0):
+					return false
+	return true
 
 static func valid_int(value: Variant) -> bool:
 	return (value is int or value is float) and value == int(value)

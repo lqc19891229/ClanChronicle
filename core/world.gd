@@ -5,6 +5,7 @@ signal day_ended(day: int)
 signal month_started(day: int)
 signal year_started(day: int)
 
+const Economy = preload("res://core/economy.gd")
 const Clock = preload("res://core/simulation_clock.gd")
 const Registry = preload("res://core/entity_registry.gd")
 const Store = preload("res://core/world_store.gd")
@@ -18,17 +19,38 @@ var state: Dictionary:
 	get:
 		if world_state.is_empty():
 			return {}
-		var clan := entity("clans", int(world_state["player_clan_id"]))
+		var clan := with_property(entity("clans", int(world_state["player_clan_id"])), "clans")
 		var id := int(clan["id"])
 		return {"day": world_state["day"], "clan": clan,
 			"branches": world_state["branches"].filter(func(b): return int(b["clan_id"]) == id),
-			"households": world_state["households"].filter(func(h): return int(entity("branches", int(h["branch_id"])).get("clan_id", -1)) == id),
+			"households": world_state["households"].filter(func(h): return int(entity("branches", int(h["branch_id"])).get("clan_id", -1)) == id).map(func(h): return with_property(h, "households")),
 			"characters": world_state["characters"].filter(func(p): return int(p["clan_id"]) == id),
 			"ancestors": world_state["ancestors"]}
 
+func with_property(owner: Dictionary, kind: String) -> Dictionary:
+	var view := owner.duplicate()
+	view.merge(Economy.summary(world_state, kind, int(owner["id"])), true)
+	return view
+
+func grant_grain(household_id: int, amount: int) -> bool:
+	if advancing or world_state.is_empty():
+		return false
+	var h := entity("households", household_id)
+	var clan_id := int(world_state["player_clan_id"])
+	if h.is_empty() or int(entity("branches", int(h["branch_id"])).get("clan_id", -1)) != clan_id:
+		return false
+	var success := Economy.transfer(world_state, Economy.account(world_state, "clans", clan_id), Economy.account(world_state, "households", household_id), "grain", amount, "宗族救济")
+	if success:
+		world_state["chronicle"].append({"day": world_state["day"], "text": "%s获得宗族救济%d石" % [h["name"], amount]})
+		changed.emit()
+	return success
+
 func _ready() -> void:
 	clock.day_ended.connect(func(day): day_ended.emit(day))
-	clock.month_started.connect(func(day): month_started.emit(day))
+	clock.month_started.connect(func(day):
+		Economy.settle_month(world_state, day)
+		month_started.emit(day)
+	)
 	clock.year_started.connect(func(day): year_started.emit(day))
 	new_game()
 

@@ -116,7 +116,7 @@ func build_ui() -> void:
     nav.add_theme_constant_override("separation", 8)
     sidebar.add_child(nav)
     nav.add_child(text_label("宗族事务", 17, GOLD))
-    for tab in ["宗族总览", "人物名册", "房支与家庭", "家谱", "财产账簿", "国家与地区"]:
+    for tab in ["宗族总览", "人物名册", "房支与家庭", "家谱", "财产账簿", "国家与地区", "产业经营", "纪事"]:
         var b = button(tab, show_tab.bind(tab))
         b.toggle_mode = true
         nav_buttons[tab] = b
@@ -130,7 +130,7 @@ func build_ui() -> void:
     content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     content.add_theme_constant_override("separation", 12)
     scroll.add_child(content)
-    status_label = text_label("原型 V0.0.2 · 四层世界基础", 15, MUTED)
+    status_label = text_label("原型 V0.0.3 · 产业与经济", 15, MUTED)
     root.add_child(status_label)
     timer = Timer.new()
     timer.wait_time = 1.0
@@ -171,6 +171,8 @@ func refresh() -> void:
         "家谱": genealogy()
         "财产账簿": property_book()
         "国家与地区": geography()
+        "产业经营": enterprises()
+        "纪事": chronicle()
 
 func heading(title: String, description: String) -> void:
     content.add_child(text_label(title, 28, GOLD))
@@ -188,8 +190,8 @@ func overview() -> void:
     assets.add_child(text_label("族田 %d亩    公库 %d贯    储粮 %d石" % [int(c["land"]), int(c["cash"]), int(c["grain"])], 20))
     var note = panel(content)
     note.add_child(text_label("当前原型范围", 20, GOLD))
-    note.add_child(text_label("时间推进、年龄变化、组织查询、财产统计、存读档。", 18))
-    note.add_child(text_label("尚未模拟生产、死亡、婚姻、生育或继承；资产不会随时间变化。", 16, MUTED))
+    note.add_child(text_label("时间推进、组织查询、产业经营、财产统计、存读档。", 18))
+    note.add_child(text_label("已模拟秋收、家庭口粮及宗族救济；尚未模拟婚姻、生育、死亡或继承。", 16, MUTED))
 
 func roster() -> void:
     heading("人物名册", "点击人物查看六维能力、亲属及家庭归属")
@@ -292,7 +294,7 @@ func geography() -> void:
                 block.add_child(text_label("聚落：" + str(settlement["name"]), 16, MUTED))
 
 func property_book() -> void:
-    heading("财产账簿", "公产与家庭财产分别统计；本版仅展示，不支持交易")
+    heading("财产账簿", "公产与家庭财产分别统计；可在产业面板提供救济")
     var c: Dictionary = World.state["clan"]
     var public_box = panel(content)
     public_box.add_child(text_label("宗族公产", 21, GOLD))
@@ -310,6 +312,61 @@ func property_book() -> void:
     var total = panel(content)
     total.add_child(text_label("全族关联资产（不可全部调动）", 21, GOLD))
     total.add_child(text_label("田地 %d亩  |  钱财 %d贯  |  粮食 %d石" % [land + int(c["land"]), cash + int(c["cash"]), grain + int(c["grain"])]))
+
+func enterprises() -> void:
+    heading("产业经营", "每年九月末秋收；每月每位家庭成员消耗1石口粮")
+    var s: Dictionary = World.world_state
+    var own: Dictionary = {}
+    for h in World.state["households"]:
+        own[int(h["id"])] = h
+    var clan_id := int(s["player_clan_id"])
+    for asset in s["assets"]:
+        var kind := str(asset["owner_kind"])
+        var owner_id := int(asset["owner_id"])
+        if not ((kind == "clans" and owner_id == clan_id) or (kind == "households" and own.has(owner_id))):
+            continue
+        var block = panel(content)
+        block.add_child(text_label(str(asset["name"]), 21, GOLD))
+        var owner := World.entity(kind, owner_id)
+        var settlement := World.entity("settlements", int(asset["settlement_id"]))
+        block.add_child(text_label("产权：%s | 地点：%s | 面积：%d亩" % [owner["name"], settlement["name"], int(asset["area"])]))
+        for e in s["enterprises"]:
+            if e["asset_id"] == asset["id"]:
+                block.add_child(text_label("管事：%s | 最近秋收：%d石" % [World.person_name(int(e["manager_id"])), int(e["last_harvest"])]))
+        if kind == "households":
+            var h: Dictionary = own[owner_id]
+            block.add_child(text_label("家庭储粮：%d石" % int(h["grain"])))
+            var relief := button("拨给家庭10石救济粮", grant_relief.bind(owner_id))
+            relief.disabled = int(World.state["clan"]["grain"]) < 10
+            block.add_child(relief)
+    var ledger = panel(content)
+    ledger.add_child(text_label("最近本族账户流水", 20, GOLD))
+    var shown := 0
+    var account_ids: Dictionary = {}
+    for a in s["accounts"]:
+        if (a["owner_kind"] == "clans" and int(a["owner_id"]) == clan_id) or (a["owner_kind"] == "households" and own.has(int(a["owner_id"]))):
+            account_ids[int(a["id"])] = true
+    for i in range(s["ledger"].size() - 1, -1, -1):
+        var entry: Dictionary = s["ledger"][i]
+        if not account_ids.has(int(entry["account_id"])):
+            continue
+        ledger.add_child(text_label("第%d日 | 账户%d | %s | %+d %s" % [int(entry["day"]), int(entry["account_id"]), entry["reason"], int(entry["delta"]), "石" if entry["resource"] == "grain" else "贯"], 15))
+        shown += 1
+        if shown >= 20:
+            break
+
+func grant_relief(id: int) -> void:
+    status_label.text = "救济粮已拨付" if World.grant_grain(id, 10) else "拨付失败：储粮不足或权限不符"
+
+func chronicle() -> void:
+    heading("纪事", "全世界最近发生的经济事件")
+    var entries: Array = World.world_state["chronicle"]
+    var block = panel(content)
+    if entries.is_empty():
+        block.add_child(text_label("暂无纪事"))
+    for i in range(entries.size() - 1, maxi(-1, entries.size() - 101), -1):
+        var entry: Dictionary = entries[i]
+        block.add_child(text_label("第%d日 · %s" % [int(entry["day"]), entry["text"]], 16))
 
 func save_current() -> void:
     var result: Error = World.save_game()

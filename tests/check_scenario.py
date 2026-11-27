@@ -1,6 +1,24 @@
 from pathlib import Path
 import json
 s = json.loads((Path(__file__).resolve().parents[1] / 'data/scenario.json').read_text(encoding='utf-8'))
+assert s['schema_version'] == 2
+clan = next(c for c in s['clans'] if c['id'] == s['player_clan_id'])
+regions = {r['id']: r for r in s['regions']}
+polities = {r['id'] for r in s['polities']}
+settlements = {r['id']: r for r in s['settlements']}
+for r in regions.values():
+    assert r['parent_id'] == -1 or r['parent_id'] in regions
+    assert r['legal_polity_id'] in polities
+    assert r['controlling_polity_id'] in polities
+for r in settlements.values():
+    assert r['region_id'] in regions
+assert clan['home_settlement_id'] in settlements
+for b in s['branches']:
+    assert b['clan_id'] == clan['id']
+for h in s['households']:
+    assert h['settlement_id'] in settlements
+for c in s['characters']:
+    assert c['clan_id'] == clan['id'] and c['settlement_id'] in settlements
 p = {x['id']: x for x in s['characters']}
 h = {x['id']: x for x in s['households']}
 b = {x['id']: x for x in s['branches']}
@@ -8,7 +26,7 @@ a = {x['id']: x for x in s['ancestors']}
 assert len(p) == 24 == len(s['characters'])
 assert len(h) == 6 and len(b) == 3
 assert not p.keys() & a.keys()
-assert s['clan']['leader_id'] in p
+assert clan['leader_id'] in p
 for x in p.values():
     assert x['branch_id'] in b and x['household_id'] in h
     assert h[x['household_id']]['branch_id'] == x['branch_id']
@@ -26,6 +44,6 @@ for x in h.values():
 for x in b.values():
     assert p[x['head_id']]['branch_id'] == x['id']
 assert sum(x['land'] for x in h.values()) == 240
-assert s['clan']['land'] == 80
-assert s['clan']['cash'] == 200 and s['clan']['grain'] == 100
+assert clan['land'] == 80
+assert clan['cash'] == 200 and clan['grain'] == 100
 print('PASS: scenario data, references, relationships, ownership totals')

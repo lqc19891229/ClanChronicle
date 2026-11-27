@@ -1,6 +1,7 @@
 extends SceneTree
 const Schema = preload("res://core/world_schema.gd")
 const Store = preload("res://core/world_store.gd")
+const Economy = preload("res://core/economy.gd")
 const Clock = preload("res://core/simulation_clock.gd")
 const Registry = preload("res://core/entity_registry.gd")
 var failures := 0
@@ -33,12 +34,14 @@ func _initialize() -> void:
 	bad = s.duplicate(true)
 	bad["regions"][0]["parent_id"] = 4
 	check(not Schema.validate(bad), "region cycle rejection")
-	var legacy := s.duplicate(true)
+	var legacy = JSON.parse_string(FileAccess.get_file_as_string(Store.SCENARIO))
 	legacy["schema_version"] = 1
 	legacy["clan"] = legacy["clans"][0]
 	for key in ["clans", "polities", "regions", "settlements", "player_clan_id"]:
 		legacy.erase(key)
 	check(Schema.validate(Schema.migrate(legacy)), "legacy migration")
+	check(Economy.summary(s, "clans", 1)["land"] == 80, "public land")
+	check(Economy.summary(s, "households", 1)["land"] == 40, "household land")
 	var path := "user://foundation_test.json"
 	check(Store.write(s, path) == OK, "save test")
 	check(Store.write(s, path) == OK, "overwrite test")
